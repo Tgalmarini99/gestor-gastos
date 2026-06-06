@@ -11,25 +11,26 @@ const useStore = create(
       updateConfig: (updates) =>
         set(state => ({ config: { ...state.config, ...updates } })),
 
-      // ── Ingresos ──────────────────────────────────────────────────────────
-      setIncome: (month, amountARS, amountUSD) =>
-        set(state => {
-          const idx = state.incomes.findIndex(i => i.month === month)
-          if (idx >= 0) {
-            const incomes = [...state.incomes]
-            incomes[idx] = { ...incomes[idx], amountARS, amountUSD }
-            return { incomes }
-          }
-          return {
-            incomes: [
-              ...state.incomes,
-              { id: `inc-${Date.now()}`, month, amountARS, amountUSD },
-            ],
-          }
-        }),
+      // ── Depósitos (entradas de dinero) ────────────────────────────────────
+      addDeposit: (deposit) =>
+        set(state => ({
+          deposits: [
+            ...state.deposits,
+            { ...deposit, id: `dep-${Date.now()}` },
+          ],
+        })),
 
-      getIncomeByMonth: (month) =>
-        get().incomes.find(i => i.month === month) || null,
+      updateDeposit: (id, updates) =>
+        set(state => ({
+          deposits: state.deposits.map(d =>
+            d.id === id ? { ...d, ...updates } : d
+          ),
+        })),
+
+      deleteDeposit: (id) =>
+        set(state => ({
+          deposits: state.deposits.filter(d => d.id !== id),
+        })),
 
       // ── Gastos ────────────────────────────────────────────────────────────
       addExpense: (expense) =>
@@ -142,8 +143,8 @@ const useStore = create(
 
       // ── Exportar ──────────────────────────────────────────────────────────
       exportData: () => {
-        const { config, incomes, expenses, budgets, goals, wishlist } = get()
-        return JSON.stringify({ config, incomes, expenses, budgets, goals, wishlist }, null, 2)
+        const { config, deposits, expenses, budgets, goals, wishlist } = get()
+        return JSON.stringify({ config, deposits, expenses, budgets, goals, wishlist }, null, 2)
       },
     }),
     { name: 'gestor-gastos-store' }

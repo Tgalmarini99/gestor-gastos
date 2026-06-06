@@ -5,15 +5,6 @@ export function toBaseCurrency(amount, fromCurrency, config) {
     : amount / config.exchangeRate
 }
 
-export function getTotalIncome(income, config) {
-  if (!income) return 0
-  const ars = income.amountARS || 0
-  const usd = income.amountUSD || 0
-  return config.baseCurrency === 'ARS'
-    ? ars + usd * config.exchangeRate
-    : ars / config.exchangeRate + usd
-}
-
 export function getBlockBudgets(totalIncome) {
   return {
     needs: totalIncome * 0.5,
@@ -40,6 +31,24 @@ export function getCategoryTotals(expenses, config) {
     totals[exp.category] = (totals[exp.category] || 0) + amount
   }
   return totals
+}
+
+// Balance = total ingresado − total gastado (todo el historial)
+export function getCurrentBalance(deposits, expenses, config) {
+  const totalIn = deposits.reduce(
+    (sum, d) => sum + toBaseCurrency(d.amount, d.currency, config), 0
+  )
+  const totalOut = expenses.reduce(
+    (sum, e) => sum + toBaseCurrency(e.amount, e.currency, config), 0
+  )
+  return { balance: totalIn - totalOut, totalIn, totalOut }
+}
+
+// Total ingresado en un mes dado (base para el 50/30/20 del mes)
+export function getMonthlyDepositsTotal(deposits, month, config) {
+  return deposits
+    .filter(d => d.date.startsWith(month))
+    .reduce((sum, d) => sum + toBaseCurrency(d.amount, d.currency, config), 0)
 }
 
 export function getSavingsTotalByMonth(goals, month, config) {

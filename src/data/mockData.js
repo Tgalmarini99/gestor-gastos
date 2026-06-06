@@ -1,17 +1,14 @@
-// Datos de ejemplo — sueldo real: USD 2.550 (último día hábil del mes)
-// TC = promedio compra/venta Banco Nación del día de acreditación
-// Ingreso total: 0 ARS + 2.550 USD × $1.200 = $3.060.000 ARS
-// Necesidades (50%): $1.530.000 → gastado $580.000 (38%)
-// Deseos     (30%): $918.000  → gastado $380.000 (41%)
-// Ahorro     (20%): $612.000  → aportado este mes $0
+// Depósitos de ejemplo — sueldo real: ARS manual + USD 510 (20% de 2.550)
+// Balance = total ingresado − total gastado
 
 export const MOCK_DATA = {
   config: {
     exchangeRate: 1200,
     baseCurrency: 'ARS',
   },
-  incomes: [
-    { id: 'inc-1', month: '2026-06', amountARS: 0, amountUSD: 2550 },
+  deposits: [
+    { id: 'dep-1', amount: 2500000, currency: 'ARS', description: 'Sueldo junio', date: '2026-05-30' },
+    { id: 'dep-2', amount: 510, currency: 'USD', description: 'Sueldo USD junio', date: '2026-05-30' },
   ],
   expenses: [
     // Necesidades
