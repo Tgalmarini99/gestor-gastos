@@ -3,7 +3,7 @@ import { X } from 'lucide-react'
 import { formatCurrency, formatMonthLabel } from '../../utils/formatters'
 import { getTotalIncome } from '../../utils/calculations'
 
-const DEFAULT_USD = 2550
+const DEFAULT_USD = 510 // 20% de USD 2.550
 
 function initForm(income) {
   return {
