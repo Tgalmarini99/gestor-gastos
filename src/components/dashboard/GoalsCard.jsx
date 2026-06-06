@@ -4,7 +4,7 @@ import { formatCurrency, formatPercent } from '../../utils/formatters'
 import { getGoalProgress, getMonthsUntilDeadline } from '../../utils/calculations'
 
 export default function GoalsCard({ goals }) {
-  const active = goals.filter(g => getGoalProgress(g).percentage < 100)
+  const active = goals.filter(g => (g.status ?? 'activo') === 'activo' && getGoalProgress(g).percentage < 100)
   if (active.length === 0) return null
 
   return (

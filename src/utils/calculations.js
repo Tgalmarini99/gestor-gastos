@@ -99,6 +99,43 @@ export function getSuggestedMonthlyContribution(goal) {
   return months > 0 ? remaining / months : remaining
 }
 
+const PRIORITY_WEIGHTS = { alta: 50, media: 20, baja: 10 }
+
+// Distribución automática del 20% de ahorro entre objetivos activos
+// monthlyIncomeARS: ingreso mensual total en ARS (usar getMonthlyDepositsTotal con config)
+export function getGoalDistribution(monthlyIncomeARS, goals, config) {
+  const savingsBlock = monthlyIncomeARS * 0.20
+  const emergencyReserve = monthlyIncomeARS * ((config.emergencyReservePercent ?? 10) / 100)
+  const goalsFund = Math.max(0, savingsBlock - emergencyReserve)
+  const tc = config.exchangeRate || 1200
+
+  const activeGoals = goals.filter(g => g.status === 'activo')
+  const totalWeight = activeGoals.reduce((s, g) => s + (PRIORITY_WEIGHTS[g.priority] || 10), 0)
+
+  const suggestions = {}
+  for (const g of activeGoals) {
+    const weight = PRIORITY_WEIGHTS[g.priority] || 10
+    const suggestedARS = totalWeight > 0 ? (weight / totalWeight) * goalsFund : 0
+    const suggestedMonthly = g.currency === 'ARS' ? suggestedARS : suggestedARS / tc
+
+    const { accumulated, remaining, percentage } = getGoalProgress(g)
+    const monthsToComplete = suggestedMonthly > 0 ? Math.ceil(remaining / suggestedMonthly) : null
+    const deadlineMonths = g.deadline ? getMonthsUntilDeadline(g.deadline) : null
+
+    suggestions[g.id] = {
+      suggestedMonthly,
+      accumulated,
+      remaining,
+      percentage,
+      monthsToComplete,
+      deadlineMonths,
+      isOnTrack: monthsToComplete !== null && deadlineMonths !== null && monthsToComplete <= deadlineMonths,
+    }
+  }
+
+  return { savingsBlock, emergencyReserve, goalsFund, suggestions }
+}
+
 export function getCurrentMonth() {
   const now = new Date()
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`

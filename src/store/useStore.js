@@ -113,7 +113,13 @@ const useStore = create(
         set(state => ({
           goals: [
             ...state.goals,
-            { ...goal, id: `goal-${Date.now()}`, contributions: [] },
+            {
+              priority: 'media',
+              status: 'activo',
+              ...goal,
+              id: `goal-${Date.now()}`,
+              contributions: [],
+            },
           ],
         })),
 
@@ -129,7 +135,8 @@ const useStore = create(
           goals: state.goals.filter(g => g.id !== id),
         })),
 
-      addContribution: (goalId, amount, date) =>
+      // contribution: { amount, currency, date, type: 'mensual'|'extraordinario', note? }
+      addContribution: (goalId, contribution) =>
         set(state => ({
           goals: state.goals.map(g =>
             g.id === goalId
@@ -137,12 +144,38 @@ const useStore = create(
                   ...g,
                   contributions: [
                     ...g.contributions,
-                    { id: `cont-${Date.now()}`, amount, date },
+                    { id: `cont-${Date.now()}`, note: '', ...contribution },
                   ],
                 }
               : g
           ),
         })),
+
+      // entries: [{ goalId, amount, currency, note }] — todos registrados como extraordinario
+      addExtraContributions: (entries, date) =>
+        set(state => {
+          const now = Date.now()
+          return {
+            goals: state.goals.map(g => {
+              const entry = entries.find(e => e.goalId === g.id)
+              if (!entry || !(Number(entry.amount) > 0)) return g
+              return {
+                ...g,
+                contributions: [
+                  ...g.contributions,
+                  {
+                    id: `cont-${now}-${g.id}`,
+                    amount: Number(entry.amount),
+                    currency: entry.currency,
+                    date,
+                    type: 'extraordinario',
+                    note: entry.note || '',
+                  },
+                ],
+              }
+            }),
+          }
+        }),
 
       // ── Wishlist ──────────────────────────────────────────────────────────
       addWishlistItem: (item) =>
