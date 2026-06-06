@@ -147,7 +147,7 @@ const useStore = create(
         return JSON.stringify({ config, deposits, expenses, budgets, goals, wishlist }, null, 2)
       },
     }),
-    { name: 'gestor-gastos-store' }
+    { name: 'gestor-gastos-store', version: 1 }
   )
 )
 
