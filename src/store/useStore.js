@@ -34,12 +34,40 @@ const useStore = create(
 
       // ── Gastos ────────────────────────────────────────────────────────────
       addExpense: (expense) =>
-        set(state => ({
-          expenses: [
-            ...state.expenses,
-            { ...expense, id: `exp-${Date.now()}` },
-          ],
-        })),
+        set(state => {
+          const { installments, ...base } = expense
+
+          if (!installments || installments <= 1) {
+            return { expenses: [...state.expenses, { ...base, id: `exp-${Date.now()}` }] }
+          }
+
+          // Crear N cuotas: primer débito = 1ro del mes siguiente a la compra
+          const N = installments
+          const perAmount = Math.round(base.amount / N)
+          const groupId = `ig-${Date.now()}`
+          const [y, mo] = base.date.split('-').map(Number)
+          let firstMonth = mo + 1
+          let firstYear = y
+          if (firstMonth > 12) { firstMonth = 1; firstYear++ }
+
+          const now = Date.now()
+          const newExpenses = Array.from({ length: N }, (_, i) => {
+            let month = firstMonth + i
+            let year = firstYear
+            while (month > 12) { month -= 12; year++ }
+            return {
+              ...base,
+              id: `exp-${now}-${i}`,
+              amount: perAmount,
+              date: `${year}-${String(month).padStart(2, '0')}-01`,
+              installmentGroupId: groupId,
+              installmentNumber: i + 1,
+              installmentTotal: N,
+            }
+          })
+
+          return { expenses: [...state.expenses, ...newExpenses] }
+        }),
 
       updateExpense: (id, updates) =>
         set(state => ({
@@ -51,6 +79,11 @@ const useStore = create(
       deleteExpense: (id) =>
         set(state => ({
           expenses: state.expenses.filter(e => e.id !== id),
+        })),
+
+      deleteExpenseGroup: (groupId) =>
+        set(state => ({
+          expenses: state.expenses.filter(e => e.installmentGroupId !== groupId),
         })),
 
       // ── Presupuestos ──────────────────────────────────────────────────────

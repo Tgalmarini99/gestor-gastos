@@ -57,7 +57,7 @@ function formatDateHeader(dateStr) {
 // ── Component ──────────────────────────────────────────────────────────────────
 
 export default function Expenses() {
-  const { config, expenses, addExpense, updateExpense, deleteExpense } = useStore()
+  const { config, expenses, addExpense, updateExpense, deleteExpense, deleteExpenseGroup } = useStore()
 
   const [period, setPeriod] = useState('month')
   const [isFormOpen, setIsFormOpen] = useState(false)
@@ -180,6 +180,7 @@ export default function Expenses() {
                       expense={expense}
                       onEdit={openEdit}
                       onDelete={deleteExpense}
+                      onDeleteGroup={deleteExpenseGroup}
                     />
                   ))}
                 </div>
