@@ -38,7 +38,7 @@ export default function DepositForm({ isOpen, onClose, onSave, initialCurrency =
       />
 
       <div
-        className={`fixed bottom-0 left-0 right-0 max-w-lg mx-auto bg-white rounded-t-3xl z-50 flex flex-col transition-transform duration-300 ${
+        className={`fixed bottom-0 left-0 right-0 max-w-lg mx-auto bg-white rounded-t-3xl z-[60] flex flex-col transition-transform duration-300 ${
           isOpen ? 'translate-y-0' : 'translate-y-full'
         }`}
         style={{ maxHeight: '92dvh' }}

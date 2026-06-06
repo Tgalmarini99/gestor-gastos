@@ -75,7 +75,7 @@ export default function ExtraContribution({ isOpen, onClose, onSave, goals, conf
     return (
       <>
         <div className={`fixed inset-0 bg-black/50 z-40 transition-opacity duration-200 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} onClick={onClose} />
-        <div className={`fixed bottom-0 left-0 right-0 max-w-lg mx-auto bg-white rounded-t-3xl z-50 flex flex-col transition-transform duration-300 p-8 text-center ${isOpen ? 'translate-y-0' : 'translate-y-full'}`}>
+        <div className={`fixed bottom-0 left-0 right-0 max-w-lg mx-auto bg-white rounded-t-3xl z-[60] flex flex-col transition-transform duration-300 p-8 text-center ${isOpen ? 'translate-y-0' : 'translate-y-full'}`}>
           <p className="text-slate-500 font-medium">No hay objetivos activos</p>
           <button onClick={onClose} className="mt-4 text-indigo-600 font-semibold text-sm">Cerrar</button>
         </div>
@@ -92,7 +92,7 @@ export default function ExtraContribution({ isOpen, onClose, onSave, goals, conf
         onClick={onClose}
       />
       <div
-        className={`fixed bottom-0 left-0 right-0 max-w-lg mx-auto bg-white rounded-t-3xl z-50 flex flex-col transition-transform duration-300 ${
+        className={`fixed bottom-0 left-0 right-0 max-w-lg mx-auto bg-white rounded-t-3xl z-[60] flex flex-col transition-transform duration-300 ${
           isOpen ? 'translate-y-0' : 'translate-y-full'
         }`}
         style={{ maxHeight: '92dvh' }}
