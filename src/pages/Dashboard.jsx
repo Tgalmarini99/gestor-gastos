@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Plus } from 'lucide-react'
 import useStore from '../store/useStore'
@@ -17,10 +17,13 @@ import BlockSummary from '../components/dashboard/BlockSummary'
 import AlertsCard from '../components/dashboard/AlertsCard'
 import GoalsCard from '../components/dashboard/GoalsCard'
 import SuggestionCard from '../components/dashboard/SuggestionCard'
+import IncomeForm from '../components/income/IncomeForm'
 
 export default function Dashboard() {
-  const { config, incomes, expenses, budgets, goals } = useStore()
+  const { config, incomes, expenses, budgets, goals, setIncome, updateConfig } = useStore()
   const navigate = useNavigate()
+
+  const [isIncomeFormOpen, setIsIncomeFormOpen] = useState(false)
 
   const currentMonth = useMemo(getCurrentMonth, [])
 
@@ -64,9 +67,22 @@ export default function Dashboard() {
     [monthExpenses, config]
   )
 
+  const handleIncomeSave = ({ amountARS, amountUSD, exchangeRate }) => {
+    setIncome(currentMonth, amountARS, amountUSD)
+    if (exchangeRate !== config.exchangeRate) {
+      updateConfig({ exchangeRate })
+    }
+    setIsIncomeFormOpen(false)
+  }
+
   return (
     <div className="relative">
-      <IncomeCard income={income} config={config} currentMonth={currentMonth} />
+      <IncomeCard
+        income={income}
+        config={config}
+        currentMonth={currentMonth}
+        onEdit={() => setIsIncomeFormOpen(true)}
+      />
 
       <div className="space-y-6 py-6">
         <BlockSummary
@@ -97,6 +113,16 @@ export default function Dashboard() {
       >
         <Plus size={24} strokeWidth={2.5} />
       </button>
+
+      <IncomeForm
+        key={isIncomeFormOpen ? 'open' : 'closed'}
+        isOpen={isIncomeFormOpen}
+        onClose={() => setIsIncomeFormOpen(false)}
+        onSave={handleIncomeSave}
+        income={income}
+        config={config}
+        currentMonth={currentMonth}
+      />
     </div>
   )
 }

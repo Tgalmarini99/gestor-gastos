@@ -1,8 +1,9 @@
-// Datos de ejemplo para validar el diseño del dashboard
-// Ingreso total: $800.000 ARS + 500 USD × $1.200 = $1.400.000 ARS
-// Necesidades (50%): $700.000 → gastado $580.000 (83%)
-// Deseos     (30%): $420.000 → gastado $380.000 (90%) ⚠️
-// Ahorro     (20%): $280.000 → aportado este mes $0
+// Datos de ejemplo — sueldo real: USD 2.550 (último día hábil del mes)
+// TC = promedio compra/venta Banco Nación del día de acreditación
+// Ingreso total: 0 ARS + 2.550 USD × $1.200 = $3.060.000 ARS
+// Necesidades (50%): $1.530.000 → gastado $580.000 (38%)
+// Deseos     (30%): $918.000  → gastado $380.000 (41%)
+// Ahorro     (20%): $612.000  → aportado este mes $0
 
 export const MOCK_DATA = {
   config: {
@@ -10,7 +11,7 @@ export const MOCK_DATA = {
     baseCurrency: 'ARS',
   },
   incomes: [
-    { id: 'inc-1', month: '2026-06', amountARS: 800000, amountUSD: 500 },
+    { id: 'inc-1', month: '2026-06', amountARS: 0, amountUSD: 2550 },
   ],
   expenses: [
     // Necesidades
