@@ -20,7 +20,7 @@ import SuggestionCard from '../components/dashboard/SuggestionCard'
 import IncomeForm from '../components/income/IncomeForm'
 
 export default function Dashboard() {
-  const { config, incomes, expenses, budgets, goals, setIncome, updateConfig } = useStore()
+  const { config, incomes, expenses, budgets, goals, setIncome } = useStore()
   const navigate = useNavigate()
 
   const [isIncomeFormOpen, setIsIncomeFormOpen] = useState(false)
@@ -67,11 +67,8 @@ export default function Dashboard() {
     [monthExpenses, config]
   )
 
-  const handleIncomeSave = ({ amountARS, amountUSD, exchangeRate }) => {
+  const handleIncomeSave = ({ amountARS, amountUSD }) => {
     setIncome(currentMonth, amountARS, amountUSD)
-    if (exchangeRate !== config.exchangeRate) {
-      updateConfig({ exchangeRate })
-    }
     setIsIncomeFormOpen(false)
   }
 

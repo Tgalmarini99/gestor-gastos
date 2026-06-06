@@ -1,31 +1,30 @@
 import { useState, useMemo } from 'react'
-import { X, Info } from 'lucide-react'
+import { X } from 'lucide-react'
 import { formatCurrency, formatMonthLabel } from '../../utils/formatters'
+import { getTotalIncome } from '../../utils/calculations'
 
-function initForm(income, config) {
+const DEFAULT_USD = 2550
+
+function initForm(income) {
   return {
     amountARS: income?.amountARS ?? 0,
-    amountUSD: income?.amountUSD ?? 0,
-    exchangeRate: config.exchangeRate,
+    amountUSD: income?.amountUSD ?? DEFAULT_USD,
   }
 }
 
 export default function IncomeForm({ isOpen, onClose, onSave, income, config, currentMonth }) {
-  const [form, setForm] = useState(() => initForm(income, config))
+  const [form, setForm] = useState(() => initForm(income))
   const set = (field, value) => setForm(f => ({ ...f, [field]: value }))
 
-  const total = useMemo(() => {
-    const ars = Number(form.amountARS) || 0
-    const usd = Number(form.amountUSD) || 0
-    const tc = Number(form.exchangeRate) || 0
-    return config.baseCurrency === 'ARS' ? ars + usd * tc : ars / tc + usd
-  }, [form, config.baseCurrency])
+  const total = useMemo(
+    () => getTotalIncome({ amountARS: Number(form.amountARS) || 0, amountUSD: Number(form.amountUSD) || 0 }, config),
+    [form, config]
+  )
 
   const handleSave = () => {
     onSave({
       amountARS: Number(form.amountARS) || 0,
-      amountUSD: Number(form.amountUSD) || 0,
-      exchangeRate: Number(form.exchangeRate) || 0,
+      amountUSD: Number(form.amountUSD) || DEFAULT_USD,
     })
   }
 
@@ -63,89 +62,55 @@ export default function IncomeForm({ isOpen, onClose, onSave, income, config, cu
             <h2 className="text-base font-bold text-slate-800">Ingresos</h2>
             <p className="text-xs text-slate-400">{formatMonthLabel(currentMonth)}</p>
           </div>
-          <button
-            onClick={handleSave}
-            className="text-sm font-bold text-indigo-600"
-          >
+          <button onClick={handleSave} className="text-sm font-bold text-indigo-600">
             Guardar
           </button>
         </div>
 
         {/* Body */}
-        <div className="overflow-y-auto flex-1 px-5 py-5 space-y-5">
+        <div className="overflow-y-auto flex-1 px-5 py-6 space-y-4">
 
-          {/* Income fields */}
-          <div className="space-y-3">
-            <p className="text-xs font-bold text-slate-400 uppercase tracking-wide">
-              Ingresos del mes
-            </p>
-
-            <div className="flex items-center gap-3 bg-slate-50 rounded-2xl px-4 py-3">
-              <span className="text-sm font-bold text-slate-400 w-10">ARS</span>
-              <span className="text-slate-300">$</span>
+          {/* ARS — principal, cambia cada mes */}
+          <div>
+            <label className="block text-xs font-bold text-slate-400 uppercase tracking-wide mb-2">
+              Ingresos en pesos
+            </label>
+            <div className="flex items-center gap-3 bg-slate-50 rounded-2xl px-4 py-4">
+              <span className="text-slate-400 font-bold">$</span>
               <input
                 type="number"
                 inputMode="decimal"
                 placeholder="0"
                 value={form.amountARS || ''}
                 onChange={e => set('amountARS', e.target.value)}
-                className="flex-1 text-right text-lg font-bold text-slate-800 bg-transparent outline-none"
+                className="flex-1 text-right text-2xl font-bold text-slate-800 bg-transparent outline-none"
+                autoFocus={isOpen}
               />
+              <span className="text-xs font-semibold text-slate-400">ARS</span>
             </div>
+          </div>
 
-            <div className="flex items-center gap-3 bg-slate-50 rounded-2xl px-4 py-3">
-              <span className="text-sm font-bold text-slate-400 w-10">USD</span>
-              <span className="text-slate-300">$</span>
+          {/* USD — fijo, pre-llenado con 2550 */}
+          <div>
+            <label className="block text-xs font-bold text-slate-400 uppercase tracking-wide mb-2">
+              Ingresos en dólares
+            </label>
+            <div className="flex items-center gap-3 bg-slate-50 rounded-2xl px-4 py-4">
+              <span className="text-slate-400 font-bold">$</span>
               <input
                 type="number"
                 inputMode="decimal"
-                placeholder="0"
+                placeholder={String(DEFAULT_USD)}
                 value={form.amountUSD || ''}
                 onChange={e => set('amountUSD', e.target.value)}
-                className="flex-1 text-right text-lg font-bold text-slate-800 bg-transparent outline-none"
+                className="flex-1 text-right text-2xl font-bold text-slate-800 bg-transparent outline-none"
               />
+              <span className="text-xs font-semibold text-slate-400">USD</span>
             </div>
           </div>
 
-          {/* Exchange rate */}
-          <div className="space-y-3">
-            <p className="text-xs font-bold text-slate-400 uppercase tracking-wide">
-              Tipo de cambio
-            </p>
-
-            <div className="flex items-center gap-3 bg-slate-50 rounded-2xl px-4 py-3">
-              <span className="text-sm font-bold text-slate-400 w-10">TC</span>
-              <span className="text-slate-300">$</span>
-              <input
-                type="number"
-                inputMode="decimal"
-                placeholder="0"
-                value={form.exchangeRate || ''}
-                onChange={e => set('exchangeRate', e.target.value)}
-                className="flex-1 text-right text-lg font-bold text-slate-800 bg-transparent outline-none"
-              />
-              <span className="text-xs text-slate-400 flex-shrink-0">ARS/USD</span>
-            </div>
-
-            {/* TC hint */}
-            <div className="flex gap-2.5 bg-blue-50 rounded-2xl px-4 py-3">
-              <Info size={15} className="text-blue-400 flex-shrink-0 mt-0.5" />
-              <div>
-                <p className="text-xs font-semibold text-blue-700 mb-0.5">
-                  Banco Nación — último día hábil
-                </p>
-                <p className="text-xs text-blue-600 leading-relaxed">
-                  TC = (compra + venta) ÷ 2
-                </p>
-                <p className="text-xs text-blue-500 mt-1">
-                  Ej: compra $1.180 + venta $1.220 → TC $1.200
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Live preview */}
-          {(Number(form.amountUSD) > 0 || Number(form.amountARS) > 0) && Number(form.exchangeRate) > 0 && (
+          {/* Preview total */}
+          {(Number(form.amountARS) > 0 || Number(form.amountUSD) > 0) && (
             <div className="bg-indigo-50 rounded-2xl px-4 py-4">
               <p className="text-xs font-semibold text-indigo-500 uppercase tracking-wide mb-1">
                 Total estimado
@@ -153,12 +118,9 @@ export default function IncomeForm({ isOpen, onClose, onSave, income, config, cu
               <p className="text-2xl font-bold text-indigo-700">
                 {formatCurrency(total, config.baseCurrency)}
               </p>
-              {Number(form.amountUSD) > 0 && Number(form.amountARS) > 0 && (
-                <p className="text-xs text-indigo-400 mt-0.5">
-                  {formatCurrency(Number(form.amountARS), 'ARS')} +{' '}
-                  {formatCurrency(Number(form.amountUSD), 'USD')} × ${Number(form.exchangeRate).toLocaleString('es-AR')}
-                </p>
-              )}
+              <p className="text-xs text-indigo-400 mt-0.5">
+                TC aplicado: $ {config.exchangeRate.toLocaleString('es-AR')} — ajustable en Ajustes
+              </p>
             </div>
           )}
 
