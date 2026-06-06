@@ -4,13 +4,13 @@ import { Plus } from 'lucide-react'
 import useStore from '../store/useStore'
 import {
   getCurrentBalance,
+  getMonthlyBalance,
   getMonthlyDepositsTotal,
   getBlockBudgets,
   getBlockTotals,
   getCategoryTotals,
   getSavingsTotalByMonth,
   filterExpensesByMonth,
-  toBaseCurrency,
   getCurrentMonth,
 } from '../utils/calculations'
 import { CATEGORY_BLOCK_MAP } from '../data/categories'
@@ -29,10 +29,10 @@ export default function Dashboard() {
 
   const currentMonth = useMemo(getCurrentMonth, [])
 
-  // ── Balance global (todo el historial) ───────────────────────────────────
-  const { balance, totalIn, totalOut } = useMemo(
-    () => getCurrentBalance(deposits, expenses, config),
-    [deposits, expenses, config]
+  // ── Balance global por moneda (sin conversión) ───────────────────────────
+  const { arsBalance, usdBalance } = useMemo(
+    () => getCurrentBalance(deposits, expenses),
+    [deposits, expenses]
   )
 
   // ── Datos del mes actual ──────────────────────────────────────────────────
@@ -41,19 +41,17 @@ export default function Dashboard() {
     [expenses, currentMonth]
   )
 
+  const monthly = useMemo(
+    () => getMonthlyBalance(deposits, expenses, currentMonth),
+    [deposits, expenses, currentMonth]
+  )
+
+  // ── 50/30/20 — basado en lo ingresado este mes (usa TC para totalizar) ───
   const monthIn = useMemo(
     () => getMonthlyDepositsTotal(deposits, currentMonth, config),
     [deposits, currentMonth, config]
   )
 
-  const monthOut = useMemo(
-    () => monthExpenses.reduce(
-      (sum, e) => sum + toBaseCurrency(e.amount, e.currency, config), 0
-    ),
-    [monthExpenses, config]
-  )
-
-  // ── 50/30/20 — basado en lo ingresado este mes ────────────────────────────
   const blockBudgets = useMemo(
     () => getBlockBudgets(monthIn),
     [monthIn]
@@ -87,12 +85,12 @@ export default function Dashboard() {
   return (
     <div className="relative">
       <BalanceCard
-        balance={balance}
-        monthIn={monthIn}
-        monthOut={monthOut}
+        arsBalance={arsBalance}
+        usdBalance={usdBalance}
+        monthly={monthly}
         currentMonth={currentMonth}
-        baseCurrency={config.baseCurrency}
-        onAddDeposit={() => setDepositForm({ open: true, currency: 'ARS' })}
+        onAddARS={() => setDepositForm({ open: true, currency: 'ARS' })}
+        onAddUSD={() => setDepositForm({ open: true, currency: 'USD' })}
       />
 
       <div className="space-y-6 py-6">

@@ -147,7 +147,22 @@ const useStore = create(
         return JSON.stringify({ config, deposits, expenses, budgets, goals, wishlist }, null, 2)
       },
     }),
-    { name: 'gestor-gastos-store', version: 1 }
+    {
+      name: 'gestor-gastos-store',
+      version: 2,
+      migrate: (persisted, version) => {
+        if (version < 2) {
+          // Asignar currency: 'ARS' a depósitos y gastos que no lo tengan
+          const fix = (arr) => arr.map(x => x.currency ? x : { ...x, currency: 'ARS' })
+          return {
+            ...persisted,
+            deposits: fix(persisted.deposits ?? []),
+            expenses: fix(persisted.expenses ?? []),
+          }
+        }
+        return persisted
+      },
+    }
   )
 )
 

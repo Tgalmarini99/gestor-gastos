@@ -33,18 +33,35 @@ export function getCategoryTotals(expenses, config) {
   return totals
 }
 
-// Balance = total ingresado − total gastado (todo el historial)
-export function getCurrentBalance(deposits, expenses, config) {
-  const totalIn = deposits.reduce(
-    (sum, d) => sum + toBaseCurrency(d.amount, d.currency, config), 0
-  )
-  const totalOut = expenses.reduce(
-    (sum, e) => sum + toBaseCurrency(e.amount, e.currency, config), 0
-  )
-  return { balance: totalIn - totalOut, totalIn, totalOut }
+// Balance por moneda — sin conversión
+export function getCurrentBalance(deposits, expenses) {
+  const sum = (arr, currency) =>
+    arr.filter(x => x.currency === currency).reduce((s, x) => s + x.amount, 0)
+
+  const arsIn  = sum(deposits, 'ARS')
+  const usdIn  = sum(deposits, 'USD')
+  const arsOut = sum(expenses, 'ARS')
+  const usdOut = sum(expenses, 'USD')
+
+  return { arsBalance: arsIn - arsOut, usdBalance: usdIn - usdOut, arsIn, usdIn, arsOut, usdOut }
 }
 
-// Total ingresado en un mes dado (base para el 50/30/20 del mes)
+// Totales del mes por moneda — para el desglose mensual
+export function getMonthlyBalance(deposits, expenses, month) {
+  const monthDeps = deposits.filter(d => d.date.startsWith(month))
+  const monthExps = expenses.filter(e => e.date.startsWith(month))
+  const sum = (arr, currency) =>
+    arr.filter(x => x.currency === currency).reduce((s, x) => s + x.amount, 0)
+
+  return {
+    arsIn:  sum(monthDeps, 'ARS'),
+    usdIn:  sum(monthDeps, 'USD'),
+    arsOut: sum(monthExps, 'ARS'),
+    usdOut: sum(monthExps, 'USD'),
+  }
+}
+
+// Total ingresado en un mes dado en moneda base — para el 50/30/20
 export function getMonthlyDepositsTotal(deposits, month, config) {
   return deposits
     .filter(d => d.date.startsWith(month))
