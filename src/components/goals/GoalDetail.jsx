@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { X, Pencil, Trash2, Plus, Clock, AlertTriangle, CheckCircle2 } from 'lucide-react'
+import { X, Pencil, Trash2, Plus, Clock, AlertTriangle, CheckCircle2, TrendingUp } from 'lucide-react'
 import ProgressBar from '../ui/ProgressBar'
 import { formatCurrency, formatMonthLabel, formatShortDate } from '../../utils/formatters'
 
@@ -117,7 +117,7 @@ export default function GoalDetail({
 
   if (!goal) return null
 
-  const { accumulated, percentage, remaining, suggestedMonthly, monthsToComplete, deadlineMonths, isOnTrack } = suggestion ?? {}
+  const { accumulated, percentage, remaining, suggestedMonthly, monthsToComplete, deadlineMonths, isOnTrack, extraNeededMonthly } = suggestion ?? {}
   const isCompleted = goal.status === 'completado' || percentage >= 100
   const sortedContribs = [...(goal.contributions ?? [])].sort((a, b) => b.date.localeCompare(a.date))
 
@@ -255,6 +255,29 @@ export default function GoalDetail({
                     ? <><CheckCircle2 size={14} /> Alcanzable en el plazo</>
                     : <><AlertTriangle size={14} /> No alcanzás el objetivo en el plazo</>
                   }
+                </div>
+              )}
+
+              {extraNeededMonthly != null && extraNeededMonthly > 0 && (
+                <div className="mt-3 p-3 bg-amber-50 border border-amber-100 rounded-xl">
+                  <div className="flex items-center gap-1.5 mb-2">
+                    <TrendingUp size={13} className="text-amber-500" />
+                    <p className="text-xs font-bold text-amber-700 uppercase tracking-wide">
+                      Para cumplir el plazo
+                    </p>
+                  </div>
+                  <div className="flex items-baseline justify-between">
+                    <span className="text-xs text-amber-700">Aporte mensual necesario</span>
+                    <span className="text-sm font-bold text-amber-800">
+                      {formatCurrency(Math.round((suggestedMonthly ?? 0) + extraNeededMonthly), goal.currency)}/mes
+                    </span>
+                  </div>
+                  <div className="flex items-baseline justify-between mt-1">
+                    <span className="text-xs text-amber-600">Extra sobre lo sugerido</span>
+                    <span className="text-sm font-bold text-amber-700">
+                      + {formatCurrency(Math.round(extraNeededMonthly), goal.currency)}/mes
+                    </span>
+                  </div>
                 </div>
               )}
             </div>

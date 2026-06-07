@@ -128,6 +128,12 @@ export function getGoalDistribution(monthlyIncomeARS, goals, config) {
     const monthsToComplete = suggestedMonthly > 0 ? Math.ceil(remaining / suggestedMonthly) : null
     const deadlineMonths = g.deadline ? getMonthsUntilDeadline(g.deadline) : null
 
+    const onTrack = monthsToComplete !== null && deadlineMonths !== null && monthsToComplete <= deadlineMonths
+    const extraNeededMonthly =
+      !onTrack && deadlineMonths != null && deadlineMonths > 0
+        ? Math.max(0, remaining / deadlineMonths - suggestedMonthly)
+        : null
+
     suggestions[g.id] = {
       suggestedMonthly,
       accumulated,
@@ -135,7 +141,8 @@ export function getGoalDistribution(monthlyIncomeARS, goals, config) {
       percentage,
       monthsToComplete,
       deadlineMonths,
-      isOnTrack: monthsToComplete !== null && deadlineMonths !== null && monthsToComplete <= deadlineMonths,
+      isOnTrack: onTrack,
+      extraNeededMonthly,
     }
   }
 

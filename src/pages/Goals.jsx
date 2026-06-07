@@ -31,7 +31,7 @@ function GoalCard({ goal, suggestion, onClick }) {
   const fallback = getGoalProgress(goal)
   const accumulated  = suggestion?.accumulated  ?? fallback.accumulated
   const percentage   = suggestion?.percentage   ?? fallback.percentage
-  const { suggestedMonthly, monthsToComplete, isOnTrack } = suggestion ?? {}
+  const { suggestedMonthly, monthsToComplete, isOnTrack, extraNeededMonthly } = suggestion ?? {}
   const isCompleted = goal.status === 'completado' || percentage >= 100
 
   return (
@@ -82,6 +82,12 @@ function GoalCard({ goal, suggestion, onClick }) {
             : <span className="text-slate-500">{monthsToComplete} mes{monthsToComplete !== 1 ? 'es' : ''}</span>
         ) : null}
       </div>
+
+      {extraNeededMonthly != null && extraNeededMonthly > 0 && !isCompleted && (
+        <p className="text-xs text-amber-600 mt-2 pt-2 border-t border-amber-100">
+          Para llegar al plazo necesitás <strong>{formatCurrency(Math.round(extraNeededMonthly), goal.currency)} extra/mes</strong>
+        </p>
+      )}
     </div>
   )
 }
