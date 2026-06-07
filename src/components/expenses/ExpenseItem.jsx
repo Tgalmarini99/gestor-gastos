@@ -8,6 +8,7 @@ export default function ExpenseItem({ expense, onEdit, onDelete, onDeleteGroup }
   const cat = getCategoryInfo(expense.category)
   const block = CATEGORY_BLOCK_MAP[expense.category]
   const isInstallment = !!expense.installmentGroupId
+  const isCreditCard  = isInstallment || !!expense.isCreditCard
 
   if (confirming) {
     if (isInstallment) {
@@ -75,10 +76,10 @@ export default function ExpenseItem({ expense, onEdit, onDelete, onDeleteGroup }
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-1.5">
           <p className="text-sm font-semibold text-slate-800">{cat.label}</p>
-          {isInstallment && (
+          {isCreditCard && (
             <span className="inline-flex items-center gap-0.5 text-[10px] font-bold text-violet-600 bg-violet-100 rounded-full px-1.5 py-0.5 flex-shrink-0">
               <CreditCard size={9} strokeWidth={2.5} />
-              {expense.installmentNumber}/{expense.installmentTotal}
+              {isInstallment ? `${expense.installmentNumber}/${expense.installmentTotal}` : '1x'}
             </span>
           )}
         </div>

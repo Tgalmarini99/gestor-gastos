@@ -5,7 +5,7 @@ import { formatCurrency, formatMonthLabel } from '../../utils/formatters'
 
 const todayStr = () => new Date().toISOString().split('T')[0]
 
-const INSTALLMENT_PRESETS = [3, 6, 12, 18, 24]
+const INSTALLMENT_PRESETS = [1, 3, 6, 12, 18, 24]
 
 function firstInstallmentMonth(dateStr) {
   if (!dateStr) return ''
@@ -47,7 +47,7 @@ export default function ExpenseForm({ isOpen, onClose, onSave, expense = null })
       description: form.description.trim(),
       date: form.date || todayStr(),
     }
-    if (!expense && form.isCreditCard && form.installments > 1) {
+    if (!expense && form.isCreditCard) {
       data.installments = form.installments
     }
     onSave(data)
