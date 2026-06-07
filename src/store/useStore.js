@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { MOCK_DATA } from '../data/mockData'
+import { fetchBnaRate } from '../utils/bnaRate'
 
 const useStore = create(
   persist(
@@ -10,6 +11,18 @@ const useStore = create(
       // ── Config ────────────────────────────────────────────────────────────
       updateConfig: (updates) =>
         set(state => ({ config: { ...state.config, ...updates } })),
+
+      fetchAndUpdateBnaRate: async (force = false) => {
+        const { config } = get()
+        const today = new Date().toISOString().split('T')[0]
+        if (!force && config.bnaRateDate === today) return
+        const rate = await fetchBnaRate()
+        if (rate !== null) {
+          set(state => ({
+            config: { ...state.config, bnaRate: Math.round(rate), bnaRateDate: today },
+          }))
+        }
+      },
 
       // ── Depósitos (entradas de dinero) ────────────────────────────────────
       addDeposit: (deposit) =>
@@ -219,15 +232,26 @@ const useStore = create(
     }),
     {
       name: 'gestor-gastos-store',
-      version: 2,
+      version: 3,
       migrate: (persisted, version) => {
         if (version < 2) {
-          // Asignar currency: 'ARS' a depósitos y gastos que no lo tengan
           const fix = (arr) => arr.map(x => x.currency ? x : { ...x, currency: 'ARS' })
-          return {
+          persisted = {
             ...persisted,
             deposits: fix(persisted.deposits ?? []),
             expenses: fix(persisted.expenses ?? []),
+          }
+        }
+        if (version < 3) {
+          persisted = {
+            ...persisted,
+            config: {
+              ...persisted.config,
+              monthlyIncomeUSD: persisted.config?.monthlyIncomeUSD ?? 0,
+              arsPercent: persisted.config?.arsPercent ?? 80,
+              bnaRate: persisted.config?.bnaRate ?? persisted.config?.exchangeRate ?? 1200,
+              bnaRateDate: persisted.config?.bnaRateDate ?? null,
+            },
           }
         }
         return persisted

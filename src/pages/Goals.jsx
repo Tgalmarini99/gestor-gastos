@@ -4,7 +4,7 @@ import useStore from '../store/useStore'
 import {
   getGoalDistribution,
   getGoalProgress,
-  getMonthlyDepositsTotal,
+  getFixedMonthlyIncomeARS,
   getCurrentMonth,
 } from '../utils/calculations'
 import { formatCurrency, formatCompact, formatMonthLabel } from '../utils/formatters'
@@ -88,7 +88,7 @@ function GoalCard({ goal, suggestion, onClick }) {
 
 export default function Goals() {
   const {
-    config, goals, deposits,
+    config, goals,
     addGoal, updateGoal, deleteGoal,
     addContribution, addExtraContributions,
   } = useStore()
@@ -101,8 +101,8 @@ export default function Goals() {
   const [showExtra, setShowExtra]       = useState(false)
 
   const monthlyIncomeARS = useMemo(
-    () => getMonthlyDepositsTotal(deposits, currentMonth, config),
-    [deposits, currentMonth, config]
+    () => getFixedMonthlyIncomeARS(config),
+    [config]
   )
 
   const { savingsBlock, emergencyReserve, goalsFund, suggestions } = useMemo(
@@ -185,7 +185,7 @@ export default function Goals() {
               </div>
             ) : (
               <p className="text-white/60 text-sm mb-4">
-                Registrá ingresos este mes para ver la distribución sugerida
+                Configurá tu ingreso mensual en Ajustes para ver la distribución sugerida
               </p>
             )}
 

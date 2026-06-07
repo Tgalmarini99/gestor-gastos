@@ -1,8 +1,15 @@
 export function toBaseCurrency(amount, fromCurrency, config) {
   if (fromCurrency === config.baseCurrency) return amount
   return config.baseCurrency === 'ARS'
-    ? amount * config.exchangeRate
-    : amount / config.exchangeRate
+    ? amount * config.bnaRate
+    : amount / config.bnaRate
+}
+
+// Ingreso mensual fijo en ARS, calculado desde config
+// Total ARS = monthlyIncomeUSD × bnaRate (parte USD convertida + parte ARS directa)
+export function getFixedMonthlyIncomeARS(config) {
+  const { monthlyIncomeUSD = 0, bnaRate = 1200 } = config
+  return monthlyIncomeUSD * bnaRate
 }
 
 export function getBlockBudgets(totalIncome) {
@@ -102,12 +109,11 @@ export function getSuggestedMonthlyContribution(goal) {
 const PRIORITY_WEIGHTS = { alta: 50, media: 20, baja: 10 }
 
 // Distribución automática del 20% de ahorro entre objetivos activos
-// monthlyIncomeARS: ingreso mensual total en ARS (usar getMonthlyDepositsTotal con config)
 export function getGoalDistribution(monthlyIncomeARS, goals, config) {
   const savingsBlock = monthlyIncomeARS * 0.20
   const emergencyReserve = monthlyIncomeARS * ((config.emergencyReservePercent ?? 10) / 100)
   const goalsFund = Math.max(0, savingsBlock - emergencyReserve)
-  const tc = config.exchangeRate || 1200
+  const tc = config.bnaRate || 1200
 
   const activeGoals = goals.filter(g => g.status === 'activo')
   const totalWeight = activeGoals.reduce((s, g) => s + (PRIORITY_WEIGHTS[g.priority] || 10), 0)

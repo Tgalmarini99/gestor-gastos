@@ -9,7 +9,7 @@ function toARS(amount, currency, tc) {
 }
 
 export default function ExtraContribution({ isOpen, onClose, onSave, goals, config }) {
-  const tc = config.exchangeRate || 1200
+  const tc = config.bnaRate || 1200
   const activeGoals = goals.filter(g => g.status === 'activo')
 
   const [available, setAvailable] = useState({ amount: '', currency: 'ARS' })

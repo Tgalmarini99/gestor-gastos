@@ -1,11 +1,11 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Plus } from 'lucide-react'
 import useStore from '../store/useStore'
 import {
   getCurrentBalance,
   getMonthlyBalance,
-  getMonthlyDepositsTotal,
+  getFixedMonthlyIncomeARS,
   getBlockBudgets,
   getBlockTotals,
   getCategoryTotals,
@@ -22,12 +22,14 @@ import SuggestionCard from '../components/dashboard/SuggestionCard'
 import DepositForm from '../components/deposits/DepositForm'
 
 export default function Dashboard() {
-  const { config, deposits, expenses, budgets, goals, addDeposit } = useStore()
+  const { config, deposits, expenses, budgets, goals, addDeposit, fetchAndUpdateBnaRate } = useStore()
   const navigate = useNavigate()
 
   const [depositForm, setDepositForm] = useState({ open: false, currency: 'ARS' })
 
   const currentMonth = useMemo(getCurrentMonth, [])
+
+  useEffect(() => { fetchAndUpdateBnaRate() }, [])
 
   // ── Balance global por moneda (sin conversión) ───────────────────────────
   const { arsBalance, usdBalance } = useMemo(
@@ -46,10 +48,10 @@ export default function Dashboard() {
     [deposits, expenses, currentMonth]
   )
 
-  // ── 50/30/20 — basado en lo ingresado este mes (usa TC para totalizar) ───
+  // ── 50/30/20 — basado en ingreso mensual fijo configurado ───────────────
   const monthIn = useMemo(
-    () => getMonthlyDepositsTotal(deposits, currentMonth, config),
-    [deposits, currentMonth, config]
+    () => getFixedMonthlyIncomeARS(config),
+    [config]
   )
 
   const blockBudgets = useMemo(

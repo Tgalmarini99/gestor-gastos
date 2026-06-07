@@ -1,6 +1,9 @@
 export const MOCK_DATA = {
   config: {
-    exchangeRate: 1200,
+    monthlyIncomeUSD: 0,
+    arsPercent: 80,
+    bnaRate: 1200,
+    bnaRateDate: null,
     baseCurrency: 'ARS',
     emergencyReservePercent: 10,
   },
