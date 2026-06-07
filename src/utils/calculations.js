@@ -12,11 +12,11 @@ export function getFixedMonthlyIncomeARS(config) {
   return monthlyIncomeUSD * bnaRate
 }
 
-export function getBlockBudgets(totalIncome) {
+export function getBlockBudgets(totalIncome, config = {}) {
   return {
-    needs: totalIncome * 0.5,
-    wants: totalIncome * 0.3,
-    savings: totalIncome * 0.2,
+    needs:   totalIncome * ((config.needsPercent   ?? 50) / 100),
+    wants:   totalIncome * ((config.wantsPercent   ?? 30) / 100),
+    savings: totalIncome * ((config.savingsPercent ?? 20) / 100),
   }
 }
 
@@ -110,7 +110,7 @@ const PRIORITY_WEIGHTS = { alta: 50, media: 20, baja: 10 }
 
 // Distribución automática del 20% de ahorro entre objetivos activos
 export function getGoalDistribution(monthlyIncomeARS, goals, config) {
-  const savingsBlock = monthlyIncomeARS * 0.20
+  const savingsBlock = monthlyIncomeARS * ((config.savingsPercent ?? 20) / 100)
   const emergencyReserve = monthlyIncomeARS * ((config.emergencyReservePercent ?? 10) / 100)
   const goalsFund = Math.max(0, savingsBlock - emergencyReserve)
   const tc = config.bnaRate || 1200

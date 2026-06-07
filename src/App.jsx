@@ -3,7 +3,7 @@ import Layout from './components/layout/Layout'
 import Dashboard from './pages/Dashboard'
 import Expenses from './pages/Expenses'
 import Goals from './pages/Goals'
-import Wishlist from './pages/Wishlist'
+import Tracking from './pages/Tracking'
 import Settings from './pages/Settings'
 
 export default function App() {
@@ -14,7 +14,7 @@ export default function App() {
           <Route path="/" element={<Dashboard />} />
           <Route path="/gastos" element={<Expenses />} />
           <Route path="/objetivos" element={<Goals />} />
-          <Route path="/wishlist" element={<Wishlist />} />
+          <Route path="/analisis" element={<Tracking />} />
           <Route path="/configuracion" element={<Settings />} />
         </Routes>
       </Layout>

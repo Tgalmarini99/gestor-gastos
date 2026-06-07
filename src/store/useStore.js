@@ -12,6 +12,48 @@ const useStore = create(
       updateConfig: (updates) =>
         set(state => ({ config: { ...state.config, ...updates } })),
 
+      dismissSuggestion: (ruleId) =>
+        set(state => ({
+          dismissedSuggestions: [
+            ...state.dismissedSuggestions.filter(s => s.ruleId !== ruleId),
+            { ruleId, dismissedAt: new Date().toISOString().split('T')[0] },
+          ],
+        })),
+
+      acceptSuggestion: (suggestion) =>
+        set(state => {
+          let next = { ...state, config: { ...state.config } }
+
+          for (const ch of suggestion.changes) {
+            if (ch.type === 'config') {
+              next.config = { ...next.config, [ch.field]: ch.newValue }
+            } else if (ch.type === 'goal') {
+              next.goals = next.goals.map(g =>
+                g.id === ch.id ? { ...g, [ch.field]: ch.newValue } : g
+              )
+            } else if (ch.type === 'budget') {
+              const idx = next.budgets.findIndex(b => b.category === ch.category)
+              if (idx >= 0) {
+                next.budgets = [...next.budgets]
+                next.budgets[idx] = { ...next.budgets[idx], monthlyLimit: ch.newValue }
+              }
+            }
+          }
+
+          next.ruleChangesHistory = [
+            {
+              id: `chg-${Date.now()}`,
+              date: new Date().toISOString().split('T')[0],
+              ruleId: suggestion.ruleId,
+              description: suggestion.acceptLabel,
+              changes: suggestion.changes,
+            },
+            ...state.ruleChangesHistory,
+          ]
+
+          return next
+        }),
+
       fetchAndUpdateBnaRate: async (force = false) => {
         const { config } = get()
         const today = new Date().toISOString().split('T')[0]
@@ -232,7 +274,7 @@ const useStore = create(
     }),
     {
       name: 'gestor-gastos-store',
-      version: 3,
+      version: 4,
       migrate: (persisted, version) => {
         if (version < 2) {
           const fix = (arr) => arr.map(x => x.currency ? x : { ...x, currency: 'ARS' })
@@ -252,6 +294,19 @@ const useStore = create(
               bnaRate: persisted.config?.bnaRate ?? persisted.config?.exchangeRate ?? 1200,
               bnaRateDate: persisted.config?.bnaRateDate ?? null,
             },
+          }
+        }
+        if (version < 4) {
+          persisted = {
+            ...persisted,
+            config: {
+              ...persisted.config,
+              needsPercent:   persisted.config?.needsPercent   ?? 50,
+              wantsPercent:   persisted.config?.wantsPercent   ?? 30,
+              savingsPercent: persisted.config?.savingsPercent ?? 20,
+            },
+            dismissedSuggestions: persisted.dismissedSuggestions ?? [],
+            ruleChangesHistory:   persisted.ruleChangesHistory   ?? [],
           }
         }
         return persisted

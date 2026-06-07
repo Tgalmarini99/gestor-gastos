@@ -55,8 +55,8 @@ export default function Dashboard() {
   )
 
   const blockBudgets = useMemo(
-    () => getBlockBudgets(monthIn),
-    [monthIn]
+    () => getBlockBudgets(monthIn, config),
+    [monthIn, config]
   )
 
   const rawBlockTotals = useMemo(
