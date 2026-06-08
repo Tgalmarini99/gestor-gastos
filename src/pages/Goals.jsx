@@ -41,8 +41,13 @@ function GoalCard({ goal, suggestion, onClick }) {
     >
       <div className="flex items-start justify-between mb-3">
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1">
+          <div className="flex items-center gap-1.5 mb-1">
             <p className="text-sm font-bold text-slate-800 truncate">{goal.name}</p>
+            {goal.currency === 'USD' && (
+              <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full flex-shrink-0 bg-emerald-100 text-emerald-700">
+                USD
+              </span>
+            )}
             {goal.priority && (
               <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full flex-shrink-0 ${PRIORITY_COLOR[goal.priority] ?? 'bg-slate-100 text-slate-500'}`}>
                 {PRIORITY_LABEL[goal.priority] ?? goal.priority}
@@ -251,6 +256,7 @@ export default function Goals() {
         key={selectedGoal?.id ?? 'no-goal'}
         goal={selectedGoal}
         suggestion={selectedGoal ? suggestions[selectedGoal.id] : null}
+        config={config}
         isOpen={!!selectedGoal}
         onClose={() => setSelectedGoal(null)}
         onEdit={() => openEdit(selectedGoal)}

@@ -5,6 +5,11 @@ import { formatCurrency, formatMonthLabel, formatShortDate } from '../../utils/f
 
 const todayStr = () => new Date().toISOString().split('T')[0]
 
+function convertAmount(amount, fromCurrency, toCurrency, bnaRate) {
+  if (fromCurrency === toCurrency) return amount
+  return fromCurrency === 'USD' ? amount * bnaRate : amount / bnaRate
+}
+
 const PRIORITY_LABEL = { alta: 'Alta', media: 'Media', baja: 'Baja' }
 const PRIORITY_COLOR = {
   alta:  'bg-rose-100 text-rose-700',
@@ -18,15 +23,32 @@ const STATUS_COLOR = {
 }
 const STATUS_LABEL = { activo: 'Activo', pausado: 'Pausado', completado: 'Completado' }
 
-function ContribForm({ goal, onSave, onCancel }) {
+function ContribForm({ goal, config, onSave, onCancel }) {
   const [form, setForm] = useState({
     amount: '',
+    currency: goal.currency,
     date: todayStr(),
     type: 'mensual',
     note: '',
   })
   const set = (f, v) => setForm(p => ({ ...p, [f]: v }))
-  const isValid = Number(form.amount) > 0
+
+  const rawAmount = Number(form.amount) || 0
+  const bnaRate   = config?.bnaRate ?? 1200
+  const isValid   = rawAmount > 0
+
+  // Monto convertido a la moneda del objetivo (para preview)
+  const convertedAmount = convertAmount(rawAmount, form.currency, goal.currency, bnaRate)
+  const showConversion  = form.currency !== goal.currency && rawAmount > 0
+
+  const handleSave = () => {
+    if (!isValid) return
+    onSave({
+      ...form,
+      amount:   convertedAmount,
+      currency: goal.currency,
+    })
+  }
 
   return (
     <div className="border-t border-slate-100 pt-4 mt-4 space-y-3">
@@ -49,11 +71,23 @@ function ContribForm({ goal, onSave, onCancel }) {
         ))}
       </div>
 
-      {/* Monto */}
-      <div className="flex items-center gap-2">
-        <span className="text-slate-400 text-sm font-bold w-8 text-right">
-          {goal.currency === 'ARS' ? '$' : 'U$S'}
-        </span>
+      {/* Moneda + Monto */}
+      <div className="flex gap-2">
+        <div className="flex gap-1 flex-shrink-0">
+          {['ARS', 'USD'].map(c => (
+            <button
+              key={c}
+              onClick={() => set('currency', c)}
+              className={`px-2.5 py-2 rounded-xl text-xs font-bold transition-colors ${
+                form.currency === c
+                  ? 'bg-emerald-600 text-white'
+                  : 'bg-slate-100 text-slate-500'
+              }`}
+            >
+              {c}
+            </button>
+          ))}
+        </div>
         <input
           type="number"
           inputMode="decimal"
@@ -64,6 +98,15 @@ function ContribForm({ goal, onSave, onCancel }) {
           autoFocus
         />
       </div>
+
+      {/* Preview de conversión */}
+      {showConversion && (
+        <p className="text-xs text-indigo-600 bg-indigo-50 rounded-lg px-3 py-2">
+          Se registrará como{' '}
+          <strong>{formatCurrency(Math.round(convertedAmount), goal.currency)}</strong>
+          {' '}(TC $ {bnaRate.toLocaleString('es-AR')})
+        </p>
+      )}
 
       {/* Fecha */}
       <input
@@ -90,7 +133,7 @@ function ContribForm({ goal, onSave, onCancel }) {
           Cancelar
         </button>
         <button
-          onClick={() => isValid && onSave({ ...form, amount: Number(form.amount), currency: goal.currency })}
+          onClick={handleSave}
           disabled={!isValid}
           className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-colors ${
             isValid ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-300'
@@ -106,6 +149,7 @@ function ContribForm({ goal, onSave, onCancel }) {
 export default function GoalDetail({
   goal,
   suggestion,
+  config,
   isOpen,
   onClose,
   onEdit,
@@ -149,9 +193,16 @@ export default function GoalDetail({
           <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-full text-slate-400 hover:bg-slate-100">
             <X size={18} />
           </button>
-          <h2 className="text-base font-bold text-slate-800 truncate px-2 max-w-[200px]">
-            {goal.name}
-          </h2>
+          <div className="flex items-center gap-1.5 min-w-0">
+            <h2 className="text-base font-bold text-slate-800 truncate max-w-[160px]">
+              {goal.name}
+            </h2>
+            {goal.currency === 'USD' && (
+              <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full flex-shrink-0 bg-emerald-100 text-emerald-700">
+                USD
+              </span>
+            )}
+          </div>
           <div className="flex gap-1">
             <button
               onClick={onEdit}
@@ -302,6 +353,7 @@ export default function GoalDetail({
           ) : (
             <ContribForm
               goal={goal}
+              config={config}
               onSave={handleSaveContrib}
               onCancel={() => setAddingContrib(false)}
             />
