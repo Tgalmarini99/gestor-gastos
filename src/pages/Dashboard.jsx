@@ -32,9 +32,9 @@ export default function Dashboard() {
   useEffect(() => { fetchAndUpdateBnaRate() }, [])
 
   // ── Balance global por moneda (sin conversión) ───────────────────────────
-  const { arsBalance, usdBalance } = useMemo(
-    () => getCurrentBalance(deposits, expenses),
-    [deposits, expenses]
+  const { arsBalance, usdBalance, arsInGoals, usdInGoals } = useMemo(
+    () => getCurrentBalance(deposits, expenses, goals),
+    [deposits, expenses, goals]
   )
 
   // ── Datos del mes actual ──────────────────────────────────────────────────
@@ -44,8 +44,8 @@ export default function Dashboard() {
   )
 
   const monthly = useMemo(
-    () => getMonthlyBalance(deposits, expenses, currentMonth),
-    [deposits, expenses, currentMonth]
+    () => getMonthlyBalance(deposits, expenses, currentMonth, goals),
+    [deposits, expenses, currentMonth, goals]
   )
 
   // ── 50/30/20 — basado en ingreso mensual fijo configurado ───────────────
@@ -89,6 +89,8 @@ export default function Dashboard() {
       <BalanceCard
         arsBalance={arsBalance}
         usdBalance={usdBalance}
+        arsInGoals={arsInGoals}
+        usdInGoals={usdInGoals}
         monthly={monthly}
         currentMonth={currentMonth}
         onAddARS={() => setDepositForm({ open: true, currency: 'ARS' })}

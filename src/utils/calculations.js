@@ -41,7 +41,8 @@ export function getCategoryTotals(expenses, config) {
 }
 
 // Balance por moneda — sin conversión
-export function getCurrentBalance(deposits, expenses) {
+// Los aportes a objetivos reducen el balance disponible (el dinero está "reservado")
+export function getCurrentBalance(deposits, expenses, goals = []) {
   const sum = (arr, currency) =>
     arr.filter(x => x.currency === currency).reduce((s, x) => s + x.amount, 0)
 
@@ -50,21 +51,50 @@ export function getCurrentBalance(deposits, expenses) {
   const arsOut = sum(expenses, 'ARS')
   const usdOut = sum(expenses, 'USD')
 
-  return { arsBalance: arsIn - arsOut, usdBalance: usdIn - usdOut, arsIn, usdIn, arsOut, usdOut }
+  const arsInGoals = goals.reduce((s, g) =>
+    s + g.contributions
+      .filter(c => (c.currency ?? g.currency) === 'ARS')
+      .reduce((a, c) => a + c.amount, 0)
+  , 0)
+  const usdInGoals = goals.reduce((s, g) =>
+    s + g.contributions
+      .filter(c => (c.currency ?? g.currency) === 'USD')
+      .reduce((a, c) => a + c.amount, 0)
+  , 0)
+
+  return {
+    arsBalance: arsIn - arsOut - arsInGoals,
+    usdBalance: usdIn - usdOut - usdInGoals,
+    arsIn, usdIn, arsOut, usdOut,
+    arsInGoals, usdInGoals,
+  }
 }
 
 // Totales del mes por moneda — para el desglose mensual
-export function getMonthlyBalance(deposits, expenses, month) {
+export function getMonthlyBalance(deposits, expenses, month, goals = []) {
   const monthDeps = deposits.filter(d => d.date.startsWith(month))
   const monthExps = expenses.filter(e => e.date.startsWith(month))
   const sum = (arr, currency) =>
     arr.filter(x => x.currency === currency).reduce((s, x) => s + x.amount, 0)
+
+  const arsContrib = goals.reduce((s, g) =>
+    s + g.contributions
+      .filter(c => c.date.startsWith(month) && (c.currency ?? g.currency) === 'ARS')
+      .reduce((a, c) => a + c.amount, 0)
+  , 0)
+  const usdContrib = goals.reduce((s, g) =>
+    s + g.contributions
+      .filter(c => c.date.startsWith(month) && (c.currency ?? g.currency) === 'USD')
+      .reduce((a, c) => a + c.amount, 0)
+  , 0)
 
   return {
     arsIn:  sum(monthDeps, 'ARS'),
     usdIn:  sum(monthDeps, 'USD'),
     arsOut: sum(monthExps, 'ARS'),
     usdOut: sum(monthExps, 'USD'),
+    arsContrib,
+    usdContrib,
   }
 }
 
